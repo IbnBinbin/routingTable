@@ -20,9 +20,6 @@ public class main {
 
 	public static void main(String[] args) {
 		resetRoutingTable(false);
-		// printMatrixCost();
-		// printRoutingTable();
-
 		while (true) {
 			System.out.println("Options:");
 			System.out.println("*Compute routing tables  >> press 1");
@@ -33,6 +30,10 @@ public class main {
 			System.out.println("*Show routing table      >> press 6");
 			System.out.println("*Exit                    >> press 7");
 			Scanner input = new Scanner(System.in);
+
+			printMatrixCost();
+			// printRoutingTable();
+
 			int option = 0;
 			if (input.hasNextInt()) {
 				option = input.nextInt();
@@ -132,9 +133,10 @@ public class main {
 			// Scanner input = new Scanner(System.in);
 			// String pathToTextFile = input.next();
 			// ReadFile(pathToTextFile);
-			// ReadFile("D:/workspace/ANC4_Routing/src/initial.txt");
-			ReadFile("D:/workspace/ANC4_Routing/src/test.txt");
+			ReadFile("D:/workspace/ANC4_Routing/src/initial.txt");
+			// ReadFile("D:/workspace/ANC4_Routing/src/test.txt");
 		}
+		// printMatrixCost();
 	}
 
 	private static void applySplitHorizon() {
@@ -208,7 +210,7 @@ public class main {
 				System.out.println("This link " + source + "-" + dest + " not found");
 			}
 		}
-
+		
 		for (int i = 0; i < ndListD.size(); i++) {
 			if (ndListD.get(i).getDestinationNode().equals(source)) {
 				ndListD.get(i).setCost(cost);
@@ -219,177 +221,162 @@ public class main {
 			}
 		}
 
-		boolean check1 = false, check2 = false;
-		resetRoutingTable(true);
-		for (int i = 0; i < matrixIndexInverse.size(); i++) {
-			ArrayList<NodeDetail> nd = routingTable.get(matrixIndexInverse.get(i));
-			for (int j = 0; j < nd.size(); j++) {
-				for (int k = 0; k < tmpChangeCost.size(); k++) {
-					if (cost >= 16) {
-						if (nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode())
-								&& nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode())) {
-							if(!(source.equals(nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode()))&&dest.equals(nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode())))){
-								nd.remove(j);
-								
-								matrixCost[matrixIndex.get(tmpChangeCost.get(k).getDestinationNode())][matrixIndex
-										.get(tmpChangeCost.get(k).getNode())] = cost;
-							}
-							
-						} else if (nd.get(j).getNode().equals(tmpChangeCost.get(k).getDestinationNode())
-								&& nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getNode())) {
-							if(!(dest.equals(nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode()))&&source.equals(nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode())))){
-								nd.remove(j);
-								
-								matrixCost[matrixIndex.get(tmpChangeCost.get(k).getNode())][matrixIndex
-										.get(tmpChangeCost.get(k).getDestinationNode())] = cost;
-							}
-						}
-					} else {
-						if (nd.get(j).getNode().equals(tmpChangeCost.get(k).getDestinationNode())
-								&& nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getNode())) {
-							nd.get(i).setOutgoingNode(tmpChangeCost.get(k).getNode());
-							nd.get(i).setCost(tmpChangeCost.get(k).getCost());
-							matrixCost[matrixIndex.get(tmpChangeCost.get(k).getNode())][matrixIndex
-									.get(tmpChangeCost.get(k).getDestinationNode())] = cost;
-						} else if (nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode())
-								&& nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode())) {
-							matrixCost[matrixIndex.get(tmpChangeCost.get(k).getDestinationNode())][matrixIndex
-									.get(tmpChangeCost.get(k).getNode())] = cost;
-							nd.get(i).setOutgoingNode(tmpChangeCost.get(k).getDestinationNode());
-							nd.get(i).setCost(tmpChangeCost.get(k).getCost());
-						}
-					}
-				}
-			}
-		}
-		if (cost >= 16) { // link fail
-			System.out.println(".................................." + tmpChangeCostToFail.size());
-			for (int i = 0; i < matrixIndexInverse.size(); i++) {
-				ArrayList<NodeDetail> nd = routingTable.get(matrixIndexInverse.get(i));
-				for (int j = 0; j < nd.size(); j++) {
+		
 
-					if (nd.get(j).getNode().equals(source) && nd.get(j).getOutGoingNode().equals(dest)) {
-						nd.remove(j);
-						check1 = true;
-						System.out.println(">>>>>>>>>>>>>>>check1");
-
-					} else if (nd.get(j).getNode().equals(dest) && nd.get(j).getOutGoingNode().equals(source)) {
-						nd.remove(j);
-						check2 = true;
-						System.out.println(">>>>>>>>>>>>>>>check2");
-					}
-					// else {
-					// for (int k = 0; k < tmpChangeCostToFail.size(); k++) {
-					// if
-					// (nd.get(j).getNode().equals(tmpChangeCostToFail.get(k).getDestinationNode())
-					// &&
-					// nd.get(j).getOutGoingNode().equals(tmpChangeCostToFail.get(k).getNode()))
-					// {
-					// nd.remove(j);
-					// matrixCost[matrixIndex.get(tmpChangeCostToFail.get(k).getNode())][matrixIndex
-					// .get(tmpChangeCostToFail.get(k).getDestinationNode())] =
-					// cost;
-					// check3 = true;
-					// System.out.println(">>>>>>>>>>>>>>>check3");
-					// break;
-					//
-					// } else if
-					// (nd.get(j).getNode().equals(tmpChangeCostToFail.get(k).getNode())
-					// && nd.get(j)
-					// .getOutGoingNode().equals(tmpChangeCostToFail.get(k).getDestinationNode()))
-					// {
-					// nd.remove(j);
-					// matrixCost[matrixIndex.get(tmpChangeCostToFail.get(k).getDestinationNode())][matrixIndex
-					// .get(tmpChangeCostToFail.get(k).getNode())] = cost;
-					// check4 = true;
-					// System.out.println(">>>>>>>>>>>>>>>check4");
-					// break;
-					// }
-					//
-					// }
-					// }
-
-					// if (tmpChangeCostToFail.size() == 0) {
-					// check3 = true;
-					// check4 = true;
-					// }
-
-					if (check1 && check2) {
-						matrixCost[matrixIndex.get(dest)][matrixIndex.get(source)] = cost;
-						matrixCost[matrixIndex.get(source)][matrixIndex.get(dest)] = cost;
-						tmpChangeCost.add(new NodeDetail(source, dest, dest, cost));
-						printMatrixCost();
-						printRoutingTable();
-						return;
-					}
-
-				}
-			}
-		} else {
-			for (int i = 0; i < matrixIndexInverse.size(); i++) {
-				ArrayList<NodeDetail> nd = routingTable.get(matrixIndexInverse.get(i));
-				for (int j = 0; j < nd.size(); j++) {
-
-					if (nd.get(j).getNode().equals(source) && nd.get(j).getOutGoingNode().equals(dest)) {
-						nd.get(j).setCost(cost);
-						check1 = true;
-					} else if (nd.get(j).getNode().equals(dest) && nd.get(j).getOutGoingNode().equals(source)) {
-						nd.get(j).setCost(cost);
-						check2 = true;
-					}
-					// else {
-					// for (int k = 0; k < tmpChangeCost.size(); k++) {
-					// if
-					// (nd.get(j).getNode().equals(tmpChangeCost.get(k).getDestinationNode())
-					// &&
-					// nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getNode()))
-					// {
-					// nd.remove(j);
-					// matrixCost[matrixIndex.get(tmpChangeCost.get(k).getNode())][matrixIndex
-					// .get(tmpChangeCost.get(k).getDestinationNode())] = cost;
-					// check3 = true;
-					// break;
-					// } else if
-					// (nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode())
-					// &&
-					// nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode()))
-					// {
-					// matrixCost[matrixIndex.get(tmpChangeCost.get(k).getDestinationNode())][matrixIndex
-					// .get(tmpChangeCost.get(k).getNode())] = cost;
-					// nd.remove(j);
-					// check4 = true;
-					// break;
-					// }
-					//
-					// }
-					// }
-
-					// if (tmpChangeCost.size() == 0) {
-					// check3 = true;
-					// check4 = true;
-					// }
-
-					if (check1 && check2) {
-						matrixCost[matrixIndex.get(dest)][matrixIndex.get(source)] = cost;
-						matrixCost[matrixIndex.get(source)][matrixIndex.get(dest)] = cost;
-						tmpChangeCost.add(new NodeDetail(source, dest, dest, cost));
-						printMatrixCost();
-						printRoutingTable();
-						return;
-					}
-					// else if(i==matrixIndexInverse.size()-1){
-					// ArrayList<NodeDetail> routingTableDetail = new
-					// ArrayList<NodeDetail>();
-					// NodeDetail nodeDetail = new NodeDetail(source,dest, dest,
-					// cost);
-					// routingTableDetail.addAll(routingTable.get(source));
-					// routingTableDetail.add(nodeDetail);
-					// routingTable.put(source, routingTableDetail);
-					// }
-				}
-			}
-
-		}
+		// boolean check1 = false, check2 = false;
+		// resetRoutingTable(true);
+		// for (int i = 0; i < matrixIndexInverse.size(); i++) {
+		// ArrayList<NodeDetail> nd =
+		// routingTable.get(matrixIndexInverse.get(i));
+		// for (int j = 0; j < nd.size(); j++) {
+		// for (int k = 0; k < tmpChangeCost.size(); k++) {
+		// if (cost >= 16) {
+		// if (nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode())
+		// &&
+		// nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode()))
+		// {
+		// if(!(source.equals(nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode()))&&dest.equals(nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode())))){
+		// nd.remove(j);
+		//
+		// matrixCost[matrixIndex.get(tmpChangeCost.get(k).getDestinationNode())][matrixIndex
+		// .get(tmpChangeCost.get(k).getNode())] = cost;
+		// }
+		//
+		// } else if
+		// (nd.get(j).getNode().equals(tmpChangeCost.get(k).getDestinationNode())
+		// &&
+		// nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getNode())) {
+		// if(!(dest.equals(nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode()))&&source.equals(nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode())))){
+		// nd.remove(j);
+		//
+		// matrixCost[matrixIndex.get(tmpChangeCost.get(k).getNode())][matrixIndex
+		// .get(tmpChangeCost.get(k).getDestinationNode())] = cost;
+		// }
+		// }
+		// } else {
+		// if
+		// (nd.get(j).getNode().equals(tmpChangeCost.get(k).getDestinationNode())
+		// &&
+		// nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getNode())) {
+		// nd.get(i).setOutgoingNode(tmpChangeCost.get(k).getNode());
+		// nd.get(i).setCost(tmpChangeCost.get(k).getCost());
+		// matrixCost[matrixIndex.get(tmpChangeCost.get(k).getNode())][matrixIndex
+		// .get(tmpChangeCost.get(k).getDestinationNode())] = cost;
+		// } else if (nd.get(j).getNode().equals(tmpChangeCost.get(k).getNode())
+		// &&
+		// nd.get(j).getOutGoingNode().equals(tmpChangeCost.get(k).getDestinationNode()))
+		// {
+		// matrixCost[matrixIndex.get(tmpChangeCost.get(k).getDestinationNode())][matrixIndex
+		// .get(tmpChangeCost.get(k).getNode())] = cost;
+		// nd.get(i).setOutgoingNode(tmpChangeCost.get(k).getDestinationNode());
+		// nd.get(i).setCost(tmpChangeCost.get(k).getCost());
+		// }
+		// }
+		// }
+		// }
+		// }
+		// if (cost >= 16) { // link fail
+		// System.out.println(".................................." +
+		// tmpChangeCostToFail.size());
+		// for (int i = 0; i < matrixIndexInverse.size(); i++) {
+		// ArrayList<NodeDetail> nd =
+		// routingTable.get(matrixIndexInverse.get(i));
+		// for (int j = 0; j < nd.size(); j++) {
+		//
+		// if (nd.get(j).getNode().equals(source) &&
+		// nd.get(j).getOutGoingNode().equals(dest)) {
+		// nd.remove(j);
+		// check1 = true;
+		// System.out.println(">>>>>>>>>>>>>>>check1");
+		//
+		// } else if (nd.get(j).getNode().equals(dest) &&
+		// nd.get(j).getOutGoingNode().equals(source)) {
+		// nd.remove(j);
+		// check2 = true;
+		// System.out.println(">>>>>>>>>>>>>>>check2");
+		// }
+		// // else {
+		// // for (int k = 0; k < tmpChangeCostToFail.size(); k++) {
+		// // if
+		// //
+		// (nd.get(j).getNode().equals(tmpChangeCostToFail.get(k).getDestinationNode())
+		// // &&
+		// //
+		// nd.get(j).getOutGoingNode().equals(tmpChangeCostToFail.get(k).getNode()))
+		// // {
+		// // nd.remove(j);
+		// //
+		// matrixCost[matrixIndex.get(tmpChangeCostToFail.get(k).getNode())][matrixIndex
+		// // .get(tmpChangeCostToFail.get(k).getDestinationNode())] =
+		// // cost;
+		// // check3 = true;
+		// // System.out.println(">>>>>>>>>>>>>>>check3");
+		// // break;
+		// //
+		// // } else if
+		// // (nd.get(j).getNode().equals(tmpChangeCostToFail.get(k).getNode())
+		// // && nd.get(j)
+		// //
+		// .getOutGoingNode().equals(tmpChangeCostToFail.get(k).getDestinationNode()))
+		// // {
+		// // nd.remove(j);
+		// //
+		// matrixCost[matrixIndex.get(tmpChangeCostToFail.get(k).getDestinationNode())][matrixIndex
+		// // .get(tmpChangeCostToFail.get(k).getNode())] = cost;
+		// // check4 = true;
+		// // System.out.println(">>>>>>>>>>>>>>>check4");
+		// // break;
+		// // }
+		// //
+		// // }
+		// // }
+		//
+		// // if (tmpChangeCostToFail.size() == 0) {
+		// // check3 = true;
+		// // check4 = true;
+		// // }
+		//
+		// if (check1 && check2) {
+		// matrixCost[matrixIndex.get(dest)][matrixIndex.get(source)] = cost;
+		// matrixCost[matrixIndex.get(source)][matrixIndex.get(dest)] = cost;
+		// tmpChangeCost.add(new NodeDetail(source, dest, dest, cost));
+		// printMatrixCost();
+		// printRoutingTable();
+		// return;
+		// }
+		//
+		// }
+		// }
+		// } else {
+		// for (int i = 0; i < matrixIndexInverse.size(); i++) {
+		// ArrayList<NodeDetail> nd =
+		// routingTable.get(matrixIndexInverse.get(i));
+		// for (int j = 0; j < nd.size(); j++) {
+		//
+		// if (nd.get(j).getNode().equals(source) &&
+		// nd.get(j).getOutGoingNode().equals(dest)) {
+		// nd.get(j).setCost(cost);
+		// check1 = true;
+		// } else if (nd.get(j).getNode().equals(dest) &&
+		// nd.get(j).getOutGoingNode().equals(source)) {
+		// nd.get(j).setCost(cost);
+		// check2 = true;
+		// }
+		//
+		//
+		// if (check1 && check2) {
+		// matrixCost[matrixIndex.get(dest)][matrixIndex.get(source)] = cost;
+		// matrixCost[matrixIndex.get(source)][matrixIndex.get(dest)] = cost;
+		// tmpChangeCost.add(new NodeDetail(source, dest, dest, cost));
+		// printMatrixCost();
+		// printRoutingTable();
+		// return;
+		// }
+		//
+		// }
+		// }
+		//
+		// }
 
 	}
 
@@ -407,6 +394,7 @@ public class main {
 		ArrayList<String> myDestList = new ArrayList<>();
 		ArrayList<String> neighborDestList = new ArrayList<>();
 		Hashtable<String, ArrayList<NodeDetail>> tmpRoutingTable = new Hashtable<>();
+		tmpRoutingTable.putAll(routingTable);
 		int[][] tmpMatrixCost = new int[matrixCost.length][matrixCost[0].length];
 		for (int i = 0; i < tmpMatrixCost.length; i++) {
 			for (int j = 0; j < tmpMatrixCost[i].length; j++) {
@@ -419,7 +407,7 @@ public class main {
 			boolean checkUpToDate = true;
 			for (int i = 0; i < matrixIndexInverse.size(); i++) {
 				String node = matrixIndexInverse.get(i);
-				// System.out.println("node: "+node);
+				System.out.println("node: " + node);
 				ArrayList<String> nbs = neighborTable.get(node);
 				// System.out.println(nbs.toString());
 				ArrayList<NodeDetail> myNode = routingTable.get(node);
@@ -444,41 +432,72 @@ public class main {
 						String myDestNode = myNode.get(l).getDestinationNode();
 						for (int k = 0; k < neighBorNode.size(); k++) {
 							String neighborDestNode = neighBorNode.get(k).getDestinationNode();
-
+							
 							if (neighborDestNode.equals(myDestNode)) {
+								System.out.println("[" + matrixIndex.get(node) + "]["
+										+ matrixIndex.get(neighBorNode.get(k).getDestinationNode()) + "]");
+								
 								int cost = matrixCost[matrixIndex.get(node)][matrixIndex
 										.get(neighBorNode.get(k).getNode())];
-								if (cost >= 16 || neighBorNode.get(k).getCost() >= 16
-										|| myNode.get(l).getCost() >= 16) {
-									break;
-								}
-								if (neighBorNode.get(k).getCost() + cost < myNode.get(l).getCost()) {
-									myNode.get(l).setCost(neighBorNode.get(k).getCost() + cost);
-									myNode.get(l).setOutgoingNode(neighBorNode.get(k).getNode());
+								// if (neighBorNode.get(k).getCost() >= 16||
+								// myNode.get(l).getCost() >= 16) {
+								// break;
+								// }
+								if (neighBorNode.get(k).getCost() + cost < myNode.get(l).getCost()
+										|| myNode.get(l).getOutGoingNode().equals(neighBorNode.get(k).getNode())) {
+
+									if (myNode.get(l).getCost() == (neighBorNode.get(k).getCost() + cost)) {
+										checkUpToDate = checkUpToDate & true;
+
+									} else {
+										checkUpToDate = false;
+									}
+
+									 myNode.get(l).setCost(neighBorNode.get(k).getCost()
+									 + cost);
+									 myNode.get(l).setOutgoingNode(neighBorNode.get(k).getNode());
 									ArrayList<NodeDetail> routingTableDetail = new ArrayList<NodeDetail>();
-									routingTableDetail.addAll(myNode);
+									ArrayList<NodeDetail> tmpMyNode = tmpRoutingTable.get(node);
+									//
+									for (int m = 0; m < tmpMyNode.size(); m++) {
+										if (tmpMyNode.get(m).getDestinationNode()
+												.equals(myNode.get(l).getDestinationNode())) {
+											tmpMyNode.get(m).setCost(neighBorNode.get(k).getCost() + cost);
+											tmpMyNode.get(m).setOutgoingNode(neighBorNode.get(k).getNode());
+											
+										}
+										
+									}
+									
+									routingTableDetail.addAll(tmpMyNode);
 									tmpRoutingTable.put(node, routingTableDetail);
 									tmpMatrixCost[matrixIndex.get(node)][matrixIndex.get(
 											neighBorNode.get(k).getDestinationNode())] = neighBorNode.get(k).getCost()
 													+ cost;
-									System.out.println("cost...: " + neighBorNode.get(k).getCost() + cost);
-									checkUpToDate = false;
+									System.out.println("cost [" + matrixIndex.get(node) + "]["
+											+ matrixIndex.get(neighBorNode.get(k).getDestinationNode()) + "]: "
+											+ neighBorNode.get(k).getCost() + cost);
+
 								} else if (checkUpToDate && i == matrixIndexInverse.size() - 1) {
 									System.out.println("Stability already achieved at round " + it);
 									return;
 								}
-							} else {
+							}
+							else {
+//								System.out.println("...");
 								for (int b = 0; b < neighborDestList.size(); b++) {
 
 									if (neighborDestList.get(b).equals(neighborDestNode)) {
 										int cost = matrixCost[matrixIndex.get(node)][matrixIndex
 												.get(neighBorNode.get(k).getNode())];
-										if (cost >= 16 || neighBorNode.get(k).getCost() >= 16) {
-											break;
-										}
+
+										// if (neighBorNode.get(k).getCost() >=
+										// 16|| myNode.get(l).getCost() >= 16) {
+										// break;
+										// }
 										NodeDetail nodeDetail = new NodeDetail(node,
 												neighBorNode.get(k).getDestinationNode(), neighBorNode.get(k).getNode(),
-												neighBorNode.get(k).getCost() + cost);
+												(neighBorNode.get(k).getCost() + cost));
 										ArrayList<NodeDetail> routingTableDetail = new ArrayList<NodeDetail>();
 										routingTableDetail.addAll(routingTable.get(node));
 										routingTableDetail.add(nodeDetail);
@@ -486,9 +505,10 @@ public class main {
 										tmpMatrixCost[matrixIndex.get(node)][matrixIndex
 												.get(neighBorNode.get(k).getDestinationNode())] = neighBorNode.get(k)
 														.getCost() + cost;
-										// System.out.println("cost:
-										// "+(neighBorNode.get(k).getCost() +
-										// cost));
+										System.out.println(
+												routingTableDetail.size() + " cost..[" + matrixIndex.get(node) + "]["
+														+ matrixIndex.get(neighBorNode.get(k).getDestinationNode())
+														+ "]: " + (neighBorNode.get(k).getCost() + cost));
 										checkUpToDate = false;
 									}
 								}
@@ -548,12 +568,16 @@ public class main {
 					}
 					ArrayList<String> nb = new ArrayList<>();
 					if (neighborTable.get(node) == null) {
-						nb.add(outGoingNode);
-						neighborTable.put(node, nb);
+						if (!node.equals(outGoingNode)) {
+							nb.add(outGoingNode);
+							neighborTable.put(node, nb);
+						}
 					} else {
-						nb.addAll(neighborTable.get(node));
-						nb.add(outGoingNode);
-						neighborTable.put(node, nb);
+						if (!node.equals(outGoingNode)) {
+							nb.addAll(neighborTable.get(node));
+							nb.add(outGoingNode);
+							neighborTable.put(node, nb);
+						}
 					}
 
 					// if(matrixIndexInverse.get(node)==null){
@@ -586,7 +610,7 @@ public class main {
 			System.out.println("Text file does not in the correct format.");
 			isFalsePath = true;
 		}
-		printRoutingTable();
+		// printRoutingTable();
 
 	}
 
