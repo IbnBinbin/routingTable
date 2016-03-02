@@ -1,0 +1,19 @@
+Number of nodes: 5
+DestinationNode Cost OutgoingLink
+A 0 A-A
+B 1 A-B
+D 1 A-D
+A 1 B-A
+B 0 B-B
+C 1 B-C
+E 1 B-E
+B 1 C-B
+C 0 C-C
+E 1 C-E
+B 1 E-B
+C 1 E-C
+D 1 E-D
+E 0 E-E
+A 1 D-A
+D 0 D-D
+E 1 D-E

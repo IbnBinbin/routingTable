@@ -20,6 +20,7 @@ public class NodeDetail {
 	public String getOutGoingNode(){return outGoingNode;}
 	public int getCost(){return cost;}
 	public void setCost(int cost){this.cost=cost;}
+	public void setOutgoingNode(String node){this.outGoingNode=node;}
 //	public ArrayList getNeighBorNode(){return neighborNode;}
 //	public void setNeighBorNode(String nbN){
 //		neighborNode.add(nbN);
