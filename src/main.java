@@ -18,25 +18,31 @@ public class main {
 	private static ArrayList<String> shortestPath = new ArrayList<>();
 	private static ArrayList<NodeDetail> tmpChangeCostToFail = new ArrayList<>();
 	private static ArrayList<NodeDetail> tmpChangeCost = new ArrayList<>();
-	private static int applySplitHorizon = 0;
 	private static int costShortTestPath = 0;
-
+	private static boolean check = true;
+	private static String startRoute = "";
+	private static boolean isApplySplitHorizon = false;
 	public static void main(String[] args) {
 		resetRoutingTable(false);
 		while (true) {
-			if (applySplitHorizon == 0) {
-				System.out.println("Split horizon is not applied");
-			} else {
-				System.out.println("Split horizon is applied");
-			}
+			System.out.println("\n");
+			
 			System.out.println("Options:");
+			System.out.println("-------------------------------------------");
 			System.out.println("*Compute routing tables        >> press 1");
 			System.out.println("*Change cost                   >> press 2");
 			System.out.println("*View the best route           >> press 3");
 			System.out.println("*Apply/unapply a split-horizon >> press 4");
-			System.out.println("*Reset the routing table       >> press 5");
-			System.out.println("*Show routing table            >> press 6");
+			System.out.println("*Show routing table            >> press 5");
+			System.out.println("*Reset the routing table       >> press 6");
 			System.out.println("*Exit                          >> press 7");
+			System.out.println("-------------------------------------------");
+			if (!isApplySplitHorizon) {
+				System.out.println("****Split horizon is not applied****");
+			} else {
+				System.out.println("****Split horizon is applied****");
+			}
+			System.out.println();
 			Scanner input = new Scanner(System.in);
 
 			printMatrixCost();
@@ -54,7 +60,8 @@ public class main {
 				System.out.println("Number of iterations for updating: ");
 				input = new Scanner(System.in);
 				int interations = input.nextInt();
-				updateRoutingTable(interations, applySplitHorizon);
+				System.out.println();
+				updateRoutingTable(interations);
 				// printRoutingTable();
 				// printMatrixCost();
 
@@ -70,11 +77,14 @@ public class main {
 				String source = line.split(",")[0].trim();
 				String dest = line.split(",")[1].trim();
 				int cost = Integer.parseInt(line.split(",")[2].trim());
+				System.out.println();
 				updateLinkCost(source, dest, cost);
 				break;
 			case 3:
 				costShortTestPath = 0;
-				System.out.println("Type source and destination node in this form >> Nsource,Ndestination: ");
+				
+				check = true;
+				System.out.println("Type source and destination node in this form >> Nsource,Ndest: ");
 				input = new Scanner(System.in);
 				line = input.nextLine();
 				if (line.split(",").length < 2) {
@@ -83,30 +93,32 @@ public class main {
 				}
 				source = line.split(",")[0].trim();
 				dest = line.split(",")[1].trim();
-
+				startRoute = source;
 				shortestPartCheck.clear();
 				shortestPartCheck.put(source, 0);
 				shortestPath.clear();
 				shortestPath.add(source);
+				System.out.println();
 				findBestRoute(source, dest);
 				break;
 			case 4:
-				System.out.println(
-						"Type 1 for apply split horizon/ Type 0 for unapply. \nAfter select you have to choose to update routing table.\nPlease select to apply or unapply split horizon: ");
-				input = new Scanner(System.in);
-				applySplitHorizon = input.nextInt();
+				isApplySplitHorizon = !isApplySplitHorizon;
 
 				break;
 			case 5:
-				resetRoutingTable(false);
-				break;
-			case 6:
+				System.out.println();
 				printRoutingTable(routingTable);
 				break;
+			case 6:
+				System.out.println();
+				resetRoutingTable(false);
+				break;
 			case 7:
+				System.out.println();
 				System.out.println("Bye Bye!");
 				return;
 			default:
+				System.out.println();
 				System.out.println("Please choose the option again!");
 				break;
 			}
@@ -146,46 +158,70 @@ public class main {
 			// Scanner input = new Scanner(System.in);
 			// String pathToTextFile = input.next();
 			// readFile(pathToTextFile);
-			readFile("D:/workspace/ANC4_Routing/src/initial.txt");
+//			readFile("D:/workspace/ANC4_Routing/src/initial.txt");
 //			 readFile("D:/workspace/ANC4_Routing/src/test2.txt");
+			 readFile("D:/workspace/ANC4_Routing/src/test3.txt");
 			// readFile("D:/workspace/ANC4_Routing/src/test.txt");
 		}
 		// printMatrixCost();
 	}
 
 	private static void findBestRoute(String source, String dest) {
+		ArrayList<NodeDetail> ndListS = routingTable.get(source);
+		ArrayList<NodeDetail> ndListD = routingTable.get(dest);
+		if (ndListS == null && ndListD == null) {
+			System.out.println("This path " + source + "-" + dest + " not found");
+			return;
+		}
 		ArrayList<NodeDetail> ndList = routingTable.get(source);
-		boolean check = false;
+//		System.out.println("from " + startRoute + " to " + dest);
+
 		if (ndList == null) {
 			System.out.println("No route from " + source + " to " + dest);
 			return;
 		}
 		for (int i = 0; i < ndList.size(); i++) {
+
 			if (ndList.get(i).getDestinationNode().equals(dest)) {
 				shortestPath.add(ndList.get(i).getOutGoingNode());
 				if (ndList.get(i).getOutGoingNode().equals(dest)) {
+
 					costShortTestPath += matrixCost[matrixIndex.get(shortestPath.get(0))][matrixIndex
 							.get(shortestPath.get(shortestPath.size() - 1))];
-					if (costShortTestPath >= 16) {
-						System.out.println("This route; " + source + " to " + dest + " is unreachable");
+
+					if (ndList.get(i).getCost() >= 16) {
+						System.out.println("Link between "+ndList.get(i).getNode()+", "+ndList.get(i).getOutGoingNode()+" is fail.\nThis route " + startRoute + " to " + dest + " is unreachable.");
 						return;
-					} else {
-						System.out.println(shortestPath.toString() + " cost: " + costShortTestPath);
+					}if (check) {
+						System.out.println("The shortest path is "+shortestPath.toString() + " cost: " + costShortTestPath);
 						check = true;
+						return;
+
+					}
+
+				} else if (ndList.get(i).getCost() < 16) {
+					
+
+					if (shortestPartCheck.get(ndList.get(i).getOutGoingNode()) == null) {
+						shortestPartCheck.put(ndList.get(i).getOutGoingNode(), 0);
+
+					} else {
+						System.out.println("Routing loop occur!! >> " + shortestPath.toString());
+						System.out.println("Link between "+ndList.get(i).getNode()+", "+ndList.get(i).getOutGoingNode()+" is fail.");
+						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
+						check = false;
+						
+					}
+					if(check){
+						findBestRoute(ndList.get(i).getOutGoingNode(), dest);
+					}else{
 						return;
 					}
 
 				} else {
-					findBestRoute(ndList.get(i).getOutGoingNode(), dest);
-
-					if (shortestPartCheck.get(ndList.get(i).getOutGoingNode()) == null) {
-						shortestPartCheck.put(ndList.get(i).getOutGoingNode(), 0);
-						return;
-					} else {
-						System.out.println("Routing loop occur!! >> " + shortestPath.toString());
-						return;
-					}
-
+					System.out.println("Link from "+ndList.get(i).getNode()+" to "+ndList.get(i).getOutGoingNode()+" is fail.\nThis route " + source + " to " + dest + " is unreachable.");
+					check = false;
+					return;
 				}
 
 			}
@@ -197,7 +233,7 @@ public class main {
 		ArrayList<NodeDetail> ndListS = routingTable.get(source);
 		ArrayList<NodeDetail> ndListD = routingTable.get(dest);
 		boolean checkIsDirectNeighbor = false;
-		if (ndListS == null && ndListD == null) {
+		if (ndListS == null || ndListD == null) {
 			System.out.println("This link " + source + "-" + dest + " not found");
 			return;
 		}
@@ -244,7 +280,7 @@ public class main {
 
 	}
 
-	private static void updateRoutingTable(int iterations, int splitHorizon) {
+	private static void updateRoutingTable(int iterations) {
 		Hashtable<String, ArrayList<NodeDetail>> tmpRoutingTable = new Hashtable<>();
 		// tmpRoutingTable.putAll(routingTable);
 
@@ -290,7 +326,8 @@ public class main {
 							// ArrayList<>();
 							NodeDetail neighborNodeDetail = neighborRoutingTable.get(k2);
 							if (myNodeDetail.getDestinationNode().equals(neighborNodeDetail.getDestinationNode())) {
-//								 System.out.println(myNodeDetail.getNode()+" "+neighborNodeDetail.getNode());
+								// System.out.println(myNodeDetail.getNode()+"
+								// "+neighborNodeDetail.getNode());
 								// if(myNodeDetail.getNode().equals(neighborNodeDetail.getOutGoingNode()))
 								// {
 								// same destination and my node equal neighbor
@@ -299,48 +336,94 @@ public class main {
 										.get(neighborNodeDetail.getNode())];
 								// System.out.println(myNodeDetail.getCost()+"....."+neighborNodeDetail.getCost()+"
 								// "+ cost);
-								if (neighborNodeDetail.getCost()!=0&&((myNodeDetail.getCost() > neighborNodeDetail.getCost() + cost)
-										|| (myNodeDetail.getOutGoingNode().equals(neighborNodeDetail.getNode()))
-												&& applySplitHorizon == 0)) {
+								if (neighborNodeDetail.getCost() != 0
+										&& ((myNodeDetail.getCost() > neighborNodeDetail.getCost() + cost)
+												|| (myNodeDetail.getOutGoingNode().equals(neighborNodeDetail.getNode()))
+														&& !isApplySplitHorizon)) {
 									int tmpCost = 0;
-									
-									if(myNodeDetail.getCost() > neighborNodeDetail.getCost() + cost && neighborNodeDetail.getCost() < 16){
-										tmpCost = Math.min(myNodeDetail.getCost(), neighborNodeDetail.getCost()+cost);
-										System.out.println(tmpCost+">>"+nodeName+"-"+neighborNodeDetail.getNode()+"=>"+myNodeDetail.getDestinationNode()+": "+neighborNodeDetail.getCost()+"________["+matrixIndex.get(nodeName)+"]["+matrixIndex.get(neighborNodeDetail.getDestinationNode())+"]");
-									}else if (neighborNodeDetail.getCost() >= 16) {
-										tmpCost = Math.min(myNodeDetail.getCost(), neighborNodeDetail.getCost()+cost);
-										System.out.println(tmpCost+">>"+nodeName+"-"+neighborNodeDetail.getNode()+"=>"+myNodeDetail.getDestinationNode()+": "+neighborNodeDetail.getCost()+".......["+matrixIndex.get(nodeName)+"]["+matrixIndex.get(neighborNodeDetail.getDestinationNode())+"]");
+
+									if (myNodeDetail.getCost() > neighborNodeDetail.getCost() + cost
+											&& neighborNodeDetail.getCost() < 16) {
+										tmpCost = Math.min(myNodeDetail.getCost(), neighborNodeDetail.getCost() + cost);
+										System.out
+												.println(
+														tmpCost + ">>" + nodeName + "-" + neighborNodeDetail.getNode()
+																+ "=>" + myNodeDetail.getDestinationNode() + ": "
+																+ neighborNodeDetail.getCost()
+																+ "________[" + matrixIndex
+																		.get(nodeName)
+																+ "][" + matrixIndex.get(
+																		neighborNodeDetail.getDestinationNode())
+																+ "]");
+									} else if (neighborNodeDetail.getCost() >= 16) {
+										tmpCost = Math.min(myNodeDetail.getCost(), neighborNodeDetail.getCost() + cost);
+										System.out
+												.println(
+														tmpCost + ">>" + nodeName + "-" + neighborNodeDetail.getNode()
+																+ "=>" + myNodeDetail.getDestinationNode() + ": "
+																+ neighborNodeDetail.getCost()
+																+ ".......[" + matrixIndex
+																		.get(nodeName)
+																+ "][" + matrixIndex.get(
+																		neighborNodeDetail.getDestinationNode())
+																+ "]");
 									} else if ((neighborNodeDetail.getCost() + cost) >= 16) {
 										tmpCost = 16;
-										System.out.println(tmpCost+">>"+nodeName+"-"+neighborNodeDetail.getNode()+"=>"+myNodeDetail.getDestinationNode()+": "+neighborNodeDetail.getCost()+"****["+matrixIndex.get(nodeName)+"]["+matrixIndex.get(neighborNodeDetail.getDestinationNode())+"]");
+										System.out
+												.println(
+														tmpCost + ">>" + nodeName + "-" + neighborNodeDetail.getNode()
+																+ "=>" + myNodeDetail.getDestinationNode() + ": "
+																+ neighborNodeDetail.getCost()
+																+ "****[" + matrixIndex
+																		.get(nodeName)
+																+ "][" + matrixIndex.get(
+																		neighborNodeDetail.getDestinationNode())
+																+ "]");
 									} else {
 										tmpCost = neighborNodeDetail.getCost() + cost;
-										System.out.println(tmpCost+">>"+nodeName+"-"+neighborNodeDetail.getNode()+"=>"+myNodeDetail.getDestinationNode()+": "+neighborNodeDetail.getCost()+"+++++++["+matrixIndex.get(nodeName)+"]["+matrixIndex.get(neighborNodeDetail.getDestinationNode())+"]");
+										System.out
+												.println(
+														tmpCost + ">>" + nodeName + "-" + neighborNodeDetail.getNode()
+																+ "=>" + myNodeDetail.getDestinationNode() + ": "
+																+ neighborNodeDetail.getCost()
+																+ "+++++++[" + matrixIndex
+																		.get(nodeName)
+																+ "][" + matrixIndex.get(
+																		neighborNodeDetail.getDestinationNode())
+																+ "]");
 									}
-									
-									if(checkMin!=null){
-										
-										if(checkMin.get(""+(matrixIndex.get(nodeName)+matrixIndex.get(neighborNodeDetail.getDestinationNode())))!=null){
-											
-											if(checkMin.get(""+(matrixIndex.get(nodeName)+matrixIndex.get(neighborNodeDetail.getDestinationNode())))<tmpCost){
-												
+
+									if (checkMin != null) {
+
+										if (checkMin.get("" + (matrixIndex.get(nodeName)
+												+ matrixIndex.get(neighborNodeDetail.getDestinationNode()))) != null) {
+
+											if (checkMin.get("" + (matrixIndex.get(nodeName) + matrixIndex
+													.get(neighborNodeDetail.getDestinationNode()))) < tmpCost) {
+
 												break;
 											}
 										}
 									}
-									checkMin.put(""+(matrixIndex.get(nodeName)+matrixIndex.get(neighborNodeDetail.getDestinationNode())), tmpCost);
-									System.out.println(".............,,,,,,,......."+checkMin.size());
-									
+									checkMin.put(
+											"" + (matrixIndex.get(nodeName)
+													+ matrixIndex.get(neighborNodeDetail.getDestinationNode())),
+											tmpCost);
+									System.out.println(".............,,,,,,,......." + checkMin.size());
+
 									NodeDetail tmpMyNodeDetail = new NodeDetail(myNodeDetail.getNode(),
 											myNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(), tmpCost);
 									tmpNodeDetailList.add(k, tmpMyNodeDetail);
-									System.out.println(tmpMyNodeDetail.getNode()+" "+tmpMyNodeDetail.getDestinationNode()+" "+tmpMyNodeDetail.getOutGoingNode()+ " "+ tmpMyNodeDetail.getCost());
+									System.out.println(tmpMyNodeDetail.getNode() + " "
+											+ tmpMyNodeDetail.getDestinationNode() + " "
+											+ tmpMyNodeDetail.getOutGoingNode() + " " + tmpMyNodeDetail.getCost());
 									NodeDetail tmpMyNodeDetail1 = tmpNodeDetailList.remove(k + 1);
-									System.out.println(tmpMyNodeDetail1.getNode()+" "+tmpMyNodeDetail1.getDestinationNode()+" "+tmpMyNodeDetail1.getOutGoingNode()+ " "+ tmpMyNodeDetail1.getCost());
-									
+									System.out.println(tmpMyNodeDetail1.getNode() + " "
+											+ tmpMyNodeDetail1.getDestinationNode() + " "
+											+ tmpMyNodeDetail1.getOutGoingNode() + " " + tmpMyNodeDetail1.getCost());
+
 									tmpRoutingTable.put(nodeName, tmpNodeDetailList);
-									
-									
+
 									// myNodeDetail.setCost(tmpCost);
 									// myNodeDetail.setOutgoingNode(neighborNodeDetail.getNode());
 									// System.out.println(k2+" "+k+" "+j+" "+i);
@@ -361,11 +444,17 @@ public class main {
 								//
 								// add node that I don't have in my routing
 								// table from neighbor
-//								 System.out.println("blah blah3");
+								// System.out.println("blah blah3");
 								neighbor_NodesInTable.removeAll(my_NodesInTable);
 								int cost = matrixCost[matrixIndex.get(neighborNodeDetail.getNode())][matrixIndex
 										.get(neighborNodeDetail.getDestinationNode())];
-								for (int l = 0; l < neighbor_NodesInTable.size(); l++) { // loop all node that I don't have
+								for (int l = 0; l < neighbor_NodesInTable.size(); l++) { // loop
+																							// all
+																							// node
+																							// that
+																							// I
+																							// don't
+																							// have
 									if (k == 0 && neighbor_NodesInTable.get(l)
 											.equals(neighborNodeDetail.getDestinationNode())) {
 										// System.out.println(nodeName+" "+j+"
@@ -380,7 +469,7 @@ public class main {
 												neighborNodeDetail.getDestinationNode())] = neighborNodeDetail.getCost()
 														+ cost;
 										allUpToDate = false;
-										
+
 										// System.out.println("-------------------------------");
 									}
 								}
