@@ -147,7 +147,7 @@ public class main {
 			// String pathToTextFile = input.next();
 			// readFile(pathToTextFile);
 			readFile("D:/workspace/ANC4_Routing/src/initial.txt");
-			// readFile("D:/workspace/ANC4_Routing/src/test2.txt");
+//			 readFile("D:/workspace/ANC4_Routing/src/test2.txt");
 			// readFile("D:/workspace/ANC4_Routing/src/test.txt");
 		}
 		// printMatrixCost();
@@ -267,6 +267,7 @@ public class main {
 				tmpNodeDetailList.addAll(routingTable.get(nodeName));
 				ArrayList<NodeDetail> tmpNodeDetailList2 = new ArrayList<>();
 				tmpNodeDetailList2.addAll(routingTable.get(nodeName));
+				Hashtable<String, Integer> checkMin = new Hashtable<>();
 				for (int j = 0; j < neighborList.size(); j++) { // all neighbor
 																// of this node
 
@@ -284,7 +285,6 @@ public class main {
 					for (int k = 0; k < myRoutingTable.size(); k++) {
 
 						NodeDetail myNodeDetail = myRoutingTable.get(k);
-						Hashtable<String, Integer> checkMin = new Hashtable<>();
 						for (int k2 = 0; k2 < neighborRoutingTable.size(); k2++) {
 							// ArrayList<String> checkNodeThatNotExist = new
 							// ArrayList<>();
@@ -319,14 +319,17 @@ public class main {
 									}
 									
 									if(checkMin!=null){
+										
 										if(checkMin.get(""+(matrixIndex.get(nodeName)+matrixIndex.get(neighborNodeDetail.getDestinationNode())))!=null){
+											
 											if(checkMin.get(""+(matrixIndex.get(nodeName)+matrixIndex.get(neighborNodeDetail.getDestinationNode())))<tmpCost){
-												System.out.println("....................");
+												
 												break;
 											}
 										}
 									}
 									checkMin.put(""+(matrixIndex.get(nodeName)+matrixIndex.get(neighborNodeDetail.getDestinationNode())), tmpCost);
+									System.out.println(".............,,,,,,,......."+checkMin.size());
 									
 									NodeDetail tmpMyNodeDetail = new NodeDetail(myNodeDetail.getNode(),
 											myNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(), tmpCost);
