@@ -340,13 +340,14 @@ public class main {
 					
 					for (int k = 0; k < myRoutingTable.size(); k++) {
 						my_NodesInTable.add(myRoutingTable.get(k).getDestinationNode());
-						nodeDetailExist.put(myRoutingTable.get(k).getDestinationNode(),myRoutingTable.get(k));
-						nodeDetailExistInvert.put(nodeDetailExist.size()-1, myRoutingTable.get(k).getDestinationNode());
+						nodeDetailExist.put(myRoutingTable.get(k).getDestinationNode()+myRoutingTable.get(k).getOutGoingNode(),myRoutingTable.get(k));
+						nodeDetailExistInvert.put(nodeDetailExist.size()-1, myRoutingTable.get(k).getDestinationNode()+myRoutingTable.get(k).getOutGoingNode());
 					}
 					for (int k = 0; k < neighborRoutingTable.size(); k++) {
 						neighbor_NodesInTable.add(neighborRoutingTable.get(k).getDestinationNode());
 					}
-
+					
+					
 					for (int k = 0; k < myRoutingTable.size(); k++) {
 
 						NodeDetail myNodeDetail = myRoutingTable.get(k);
@@ -428,34 +429,38 @@ public class main {
 									NodeDetail removeNodeDetail = null;
 									if (nodeDetailExist != null) {
 										
-//										if (nodeDetailExist.get(neighborNodeDetail.getDestinationNode()) != null) {
-//											System.out.println(neighborNodeDetail.getDestinationNode()+"**********"+nodeDetailExist.get(neighborNodeDetail.getDestinationNode()).getCost()+"   "+tmpCost);
-//											System.out.println(nodeDetailExist.get(neighborNodeDetail.getDestinationNode()).getCost()+" <= "+ tmpCost);
-//											System.out.println(nodeDetailExist.get(neighborNodeDetail.getDestinationNode()).getOutGoingNode()+" "+(neighborNodeDetail.getNode()));
-//											if (nodeDetailExist.get(neighborNodeDetail.getDestinationNode()).getDestinationNode().equals(neighborNodeDetail.getDestinationNode())) {
-//												System.out.println("breakkkkkk!");
-//												isAlreadyExist = true;
+										if (nodeDetailExist.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()) != null) {
+											System.out.println(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()+"**********"+nodeDetailExist.get(""+neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()).getCost()+"   "+tmpCost);
+											System.out.println(nodeDetailExist.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()).getCost()+" <= "+ tmpCost);
+											System.out.println(nodeDetailExist.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()).getOutGoingNode()+" "+(neighborNodeDetail.getNode()));
+											if (nodeDetailExist.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()).getDestinationNode().equals(neighborNodeDetail.getDestinationNode())&&nodeDetailExist.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()).getCost() <= tmpCost) {
+												System.out.println("breakkkkkk!");
+												isAlreadyExist = true;
+											}
+//											else{
+//												removeNodeDetail = new NodeDetail(nodeName,
+//														neighborNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(), nodeDetailExist.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()).getCost());
 //											}
-////											
-//										}
+										}
 									}
-									nodeDetailExist.put(neighborNodeDetail.getDestinationNode(), new NodeDetail(nodeName,
+									nodeDetailExist.put(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode(), new NodeDetail(nodeName,
 											neighborNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(),
 											tmpCost));
 			
-									nodeDetailExistInvert.put(nodeDetailExist.size()-1, neighborNodeDetail.getDestinationNode());
-//									if (checkMin != null) {
-//
-//										if (checkMin.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()) != null) {
-//
-//											if (checkMin.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()) <= tmpCost) {
-//
-//												break;
-//											}
-//										}
-//									}
-//									checkMin.put(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode(),tmpCost);
-//									System.out.println(tmpNodeDetailList.size()+".............,,,,,,,......." + nodeDetailExist.size()+" "+nodeDetailExistInvert.size());
+									nodeDetailExistInvert.put(nodeDetailExist.size()-1, neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode());
+									if (checkMin != null) {
+
+										if (checkMin.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()) != null) {
+
+											if (checkMin.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()) <= tmpCost) {
+
+												break;
+											}
+										}
+									}
+									checkMin.put(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode(),tmpCost);
+									System.out.println(tmpNodeDetailList.size()+".............,,,,,,,......." + nodeDetailExist.size()+" "+nodeDetailExistInvert.size());
+									
 									if(!checkIsMoreThanOneInterface && !isAlreadyExist){
 										NodeDetail tmpMyNodeDetail = new NodeDetail(myNodeDetail.getNode(),
 												myNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(), tmpCost);
@@ -545,36 +550,41 @@ public class main {
 									if (k == 0 && neighbor_NodesInTable.get(l)
 											.equals(neighborNodeDetail.getDestinationNode())) {
 										
-										System.out.println(nodeDetailExist.size()+"........"+neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode());
-										if (nodeDetailExist != null) {
-											if (nodeDetailExist.get(neighborNodeDetail.getDestinationNode()) != null) {
-												System.out.println(nodeDetailExist.get(""+neighborNodeDetail.getDestinationNode()).getCost()+"   "+neighborNodeDetail.getCost()+"+"+cost);
-												if (nodeDetailExist.get(neighborNodeDetail.getDestinationNode()).getCost() <= neighborNodeDetail.getCost()) {
-													System.out.println("break.,,,,,,,,,,,,,,,,");
-													break;
-												}
-											}
-										}
-										
-										System.out.println("HELLO");
-										nodeDetailExist.put(neighborNodeDetail.getDestinationNode(), new NodeDetail(nodeName,
-												neighborNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(),
-												neighborNodeDetail.getCost() + cost));
-										nodeDetailExistInvert.put(nodeDetailExist.size()-1, neighborNodeDetail.getDestinationNode());
-//										
-										for (int l2 = 0; l2 < tmpNodeDetailList.size(); l2++) {
-											if(tmpNodeDetailList.get(l2).getDestinationNode().equals(neighborNodeDetail.getDestinationNode())){
-												tmpNodeDetailList.remove(l2);
-											}
-										}
-										tmpNodeDetailList.add(new NodeDetail(nodeName,
-												neighborNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(),
-												neighborNodeDetail.getCost() + cost));
-										tmpRoutingTable.put(nodeName, tmpNodeDetailList);
-										tmpMatrixCost[matrixIndex.get(nodeName)][matrixIndex.get(
-												neighborNodeDetail.getDestinationNode())] = neighborNodeDetail.getCost()
-														+ cost;
-										allUpToDate = false;
+										// have
+					
+						// System.out.println(nodeName+" "+j+"
+						// "+k+" "+k2+" "+l+" "+cost+"
+						// "+neighborNodeDetail.getNode()+"
+						// "+neighborNodeDetail.getDestinationNode());
+						System.out.println(nodeDetailExist.size()+"........"+neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode());
+						if (nodeDetailExist != null) {
+							if (nodeDetailExist.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()) != null) {
+								System.out.println(nodeDetailExist.get(""+neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()).getCost()+"   "+neighborNodeDetail.getCost()+"+"+cost);
+								if (nodeDetailExist.get(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode()).getCost() <= neighborNodeDetail.getCost() + cost) {
+
+									break;
+								}
+							}
+						}
+						
+						nodeDetailExist.put(neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode(), new NodeDetail(nodeName,
+								neighborNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(),
+								neighborNodeDetail.getCost() + cost));
+						nodeDetailExistInvert.put(nodeDetailExist.size()-1, neighborNodeDetail.getDestinationNode()+neighborNodeDetail.getOutGoingNode());
+//						ArrayList<NodeDetail> tmp = new ArrayList<>();
+//						for (int m = 0; m < nodeDetailExist.size(); m++) {
+////							tmpNodeDetailList.clear();
+//							tmp.add(nodeDetailExist.get(nodeDetailExistInvert.get(m)));
+//						}
+//						tmpRoutingTable.put(nodeName, tmp);
+						tmpNodeDetailList.add(new NodeDetail(nodeName,
+								neighborNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(),
+								neighborNodeDetail.getCost() + cost));
+						tmpRoutingTable.put(nodeName, tmpNodeDetailList);
+						tmpMatrixCost[matrixIndex.get(nodeName)][matrixIndex.get(
+								neighborNodeDetail.getDestinationNode())] = neighborNodeDetail.getCost()
+										+ cost;
+						allUpToDate = false;
 										
 									}
 								}
