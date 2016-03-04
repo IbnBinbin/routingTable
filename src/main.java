@@ -161,8 +161,8 @@ public class main {
 			// Scanner input = new Scanner(System.in);
 			// String pathToTextFile = input.next();
 			// readFile(pathToTextFile);
-//			readFile("D:/workspace/ANC4_Routing/src/initial.txt");
-			 readFile("D:/workspace/ANC4_Routing/src/test2.txt");
+			readFile("D:/workspace/ANC4_Routing/src/initial.txt");
+//			 readFile("D:/workspace/ANC4_Routing/src/test2.txt");
 //			 readFile("D:/workspace/ANC4_Routing/src/test3.txt");
 			// readFile("D:/workspace/ANC4_Routing/src/test.txt");
 		}
@@ -512,9 +512,9 @@ public class main {
 										NodeDetail tmpMyNodeDetail = new NodeDetail(myNodeDetail.getNode(),
 												myNodeDetail.getDestinationNode(), neighborNodeDetail.getNode(), tmpCost);
 										for (int l = 0; l < tmpNodeDetailList.size(); l++) {
-											
-											if(tmpNodeDetailList.get(l).getDestinationNode().equals(neighborNodeDetail.getDestinationNode())&&(tmpNodeDetailList.get(l).getOutGoingNode().equals(neighborNodeDetail.getNode())||tmpNodeDetailList.get(l).getCost()>=16)&&(tmpNodeDetailList.get(l).getCost()>(neighborNodeDetail.getCost())||isApplySplitHorizon)){
-												System.out.println(tmpNodeDetailList.get(l).getCost()+" > "+(neighborNodeDetail.getCost()));
+											System.out.println(tmpNodeDetailList.get(l).getCost()+" > "+(neighborNodeDetail.getCost()));
+											if(tmpNodeDetailList.get(l).getDestinationNode().equals(neighborNodeDetail.getDestinationNode())&&(tmpNodeDetailList.get(l).getOutGoingNode().equals(neighborNodeDetail.getNode())||tmpNodeDetailList.get(l).getCost()>=16)&&(tmpNodeDetailList.get(l).getCost()>(neighborNodeDetail.getCost()+tmpCost)||isApplySplitHorizon)){
+												
 												//for topology with one node has more than 1 interface
 //											if(tmpNodeDetailList.get(l).getDestinationNode().equals(neighborNodeDetail.getDestinationNode())&&(tmpNodeDetailList.get(l).getCost()>(neighborNodeDetail.getCost())||isApplySplitHorizon)){
 												//only one interface
