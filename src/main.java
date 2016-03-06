@@ -111,6 +111,8 @@ public class main {
 				printRoutingTable(line);
 				break;
 			case 6:
+				linkFail.clear();
+				isApplySplitHorizon=false;
 				firstUpdate=true;
 				System.out.println();
 				resetRoutingTable(false);
@@ -364,7 +366,10 @@ public class main {
 				}
 				
 			}
-			
+			if(linkFail.size() < 1){
+				isApplySplitHorizon = false;
+				System.out.println("No link fail detected. Cannot apply a Split Horizon");
+			}
 			for (int i = 0, b=0; i < nodesCount; i++) { // all node
 				String nodeName = matrixIndexInverse.get(i);
 				ArrayList<String> directNeighborList = new ArrayList<>();
@@ -420,34 +425,20 @@ public class main {
 //								System.out.println(myPresentNode.getOutGoingNode()+" "+neighborPresentNode.getOutGoingNode());
 								NodeDetail nodeCheckMinCost = nodeMinOfEachDest.get(neighborPresentNode.getDestinationNode());
 								
-								if(!isApplySplitHorizon || !neighborPresentNode.getOutGoingNode().equals(myPresentNode.getNode())){
+//								if(!isApplySplitHorizon || !neighborPresentNode.getOutGoingNode().equals(myPresentNode.getNode())){
 									if(nodeCheckMinCost!=null){
-										if(nodeCheckMinCost.getCost() > newCost){
+										if(nodeCheckMinCost.getCost() > newCost && (!isApplySplitHorizon || !neighborPresentNode.getOutGoingNode().equals(myPresentNode.getNode()))){
 											nodeMinOfEachDest.remove(neighborPresentNode.getDestinationNode());
 											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
-											if(newNode.getOutGoingNode().equals(nodeCheckMinCost)){
-												if(listnodeMinOfEachDestOut!=null && listnodeMinOfEachDestOut.size()>0){
-													for (int m = 0; m < listnodeMinOfEachDestOut.size(); m++) {
-														if(listnodeMinOfEachDestOut.get(m)==null){
-															listnodeMinOfEachDestOut.add(newNode);
-														}else if(listnodeMinOfEachDestOut.get(m).getCost() > newCost && listnodeMinOfEachDestOut.get(m).getDestinationNode().equals(neighborPresentNode.getDestinationNode())&&listnodeMinOfEachDestOut.get(m).getOutGoingNode().equals(neighborPresentNode.getNode())){
-															listnodeMinOfEachDestOut.remove(m);
-															listnodeMinOfEachDestOut.add(m,nodeCheckMinCost);
-															System.out.println("removeAdd: "+nodeName+"----- "+nodeCheckMinCost.getDestinationNode()+" "+nodeCheckMinCost.getOutGoingNode()+" "+nodeCheckMinCost.getCost());
-														}
-														
-													}
-												
-												}
-												
-											}
+											System.out.print(myPresentNode.getNode()+" "+myPresentNode.getDestinationNode()+ " "+myPresentNode.getCost()+"...");
+											System.out.println(neighborPresentNode.getNode()+" "+neighborPresentNode.getDestinationNode()+" "+newCost);
 										}
 									}else{
 										System.out.println(".......");
 										nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
 										listnodeMinOfEachDestOut.add(newNode);
 									}
-								}
+//								}
 								
 							}else if(isNotFinishInitial){
 								//different destination >> initial routing table
@@ -502,21 +493,21 @@ public class main {
 								}
 								tmpMatrixCost[matrixIndex.get(nodeName)][matrixIndex.get(matrixIndexInverse.get(k))] = a.getCost();
 							}
-//							System.out.println("inhash: "+a.getNode()+" "+a.getDestinationNode()+" "+a.getCost()+" "+a.getOutGoingNode());
-						}
-						
-					}
-					for (int k = 0; k < listnodeMinOfEachDestOut.size(); k++) {
-						NodeDetail a = listnodeMinOfEachDestOut.get(k);
-//						System.out.println("#########"+a.getDestinationNode()+" "+a.getOutGoingNode());
-						if(a!=null){
 							System.out.println("inhash: "+a.getNode()+" "+a.getDestinationNode()+" "+a.getCost()+" "+a.getOutGoingNode());
-//							newNodeArray.add(a);
 						}
 						
 					}
+//					for (int k = 0; k < listnodeMinOfEachDestOut.size(); k++) {
+//						NodeDetail a = listnodeMinOfEachDestOut.get(k);
+////						System.out.println("#########"+a.getDestinationNode()+" "+a.getOutGoingNode());
+//						if(a!=null){
+//							System.out.println("inhash: "+a.getNode()+" "+a.getDestinationNode()+" "+a.getCost()+" "+a.getOutGoingNode());
+//							newNodeArray.add(a);
+//						}
+//						
+//					}
 					
-					if(newNodeArray!=null && newNodeArray.size()>=nodesCount ){
+					if(newNodeArray!=null){
 						tmpRoutingTable.put(nodeName, newNodeArray);
 					}
 				}
@@ -531,6 +522,10 @@ public class main {
 			printMatrixCost();
 			printRoutingTable("all");
 //			printRoutingTable(nodesString);
+			if(linkFail.size() < 1){
+				isApplySplitHorizon = false;
+				System.out.println("No link fail detected. Cannot apply a Split Horizon");
+			}
 			if (allUpToDate) {
 				System.out.println("Stability already achieved at round " + it);
 				countAchive=0;
