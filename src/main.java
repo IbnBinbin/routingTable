@@ -181,9 +181,9 @@ public class main {
 //			 Scanner input = new Scanner(System.in);
 //			 String pathToTextFile = input.next();
 //			 readFile(pathToTextFile);
-			readFile("D:/workspace/ANC4_Routing/src/initial.txt");
+//			readFile("D:/workspace/ANC4_Routing/src/initial.txt");
 //			 readFile("D:/workspace/ANC4_Routing/src/test2.txt");
-//			 readFile("D:/workspace/ANC4_Routing/src/test3.txt");
+			 readFile("D:/workspace/ANC4_Routing/src/test3.txt");
 			// readFile("D:/workspace/ANC4_Routing/src/test.txt");
 		}
 	}
@@ -191,7 +191,7 @@ public class main {
 	private static void findBestRoute(String source, String dest, int checkCost, String path) {
 		ArrayList<NodeDetail> ndListS = routingTable.get(source);
 		ArrayList<NodeDetail> ndListD = routingTable.get(dest);
-		if (ndListS == null && ndListD == null) {
+		if (ndListS == null || ndListD == null) {
 			System.out.println("This path " + source + "-" + dest + " not found");
 			return;
 		}
@@ -208,29 +208,36 @@ public class main {
 				if (ndList.get(i).getOutGoingNode().equals(dest)) {
 					if(firstFindBestRoute){
 						checkCost = ndList.get(i).getCost();
-						path= ndList.get(i).getNode();
+						path= ndList.get(i).getNode()+","+ndList.get(i).getDestinationNode();
 						firstFindBestRoute = false;
 					}else{
 						path += ","+ndList.get(i).getOutGoingNode();
 					}
 					String tmpPath[] = path.split(",");
+					System.out.println(tmpPath[0]+" "+tmpPath[tmpPath.length-1]);
 					costShortTestPath = matrixCost[matrixIndex.get(tmpPath[0])][matrixIndex
 							.get(tmpPath[tmpPath.length-1])];
 
-					if (ndList.get(i).getCost() >= 16 && !isFinish) {
-						System.out.println("Link between "+ndList.get(i).getNode()+", "+ndList.get(i).getOutGoingNode()+" is fail.\nThis route " + startRoute + " to " + dest + " is unreachable.");
-						return;
-					}
-					if(checkCost!=costShortTestPath){
-//						System.out.println(checkCost+" != "+costShortTestPath+ " "+path);
-						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
-						return;
-					}
+					
 					if (checkNotFail&&!isFinish) {
 						System.out.println("The shortest path is ["+path + "]. cost: " + costShortTestPath);
 						isFinish = true;
 						return;
 
+					}
+					if (ndList.get(i).getCost() >= 16 && !isFinish) {
+						System.out.println("Link between "+ndList.get(i).getNode()+", "+ndList.get(i).getOutGoingNode()+" is fail.\nThis route " + startRoute + " to " + dest + " is unreachable.");
+						return;
+					}
+					if(checkCost!=costShortTestPath&&!isFinish){
+						System.out.println(checkCost+" != "+costShortTestPath+ " "+path);
+						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
+						return;
+					}
+						if(ndList.get(i).getCost() > 16){
+						System.out.println("Link from "+ndList.get(i).getNode()+" to "+ndList.get(i).getOutGoingNode()+" is fail.\nThis route " + startRoute + " to " + dest + " is unreachable.");
+						checkNotFail = false;
+						return;
 					}
 
 				} else if (ndList.get(i).getCost() < 16) {
@@ -244,7 +251,7 @@ public class main {
 						}
 					}
 					
-					if (isLoop){
+					if (isLoop && !isFinish){
 						System.out.println("Routing loop occur!! >> [" + path+"]");
 						System.out.println("Link between "+ndList.get(i).getNode()+", "+ndList.get(i).getOutGoingNode()+" is fail.");
 						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
@@ -252,6 +259,7 @@ public class main {
 						return;
 					}
 					if(checkNotFail){
+						System.out.println(ndList.get(i).getCost()+" "+checkCost);
 						findBestRoute(ndList.get(i).getOutGoingNode(), dest, ndList.get(i).getCost()+checkCost, path+","+ndList.get(i).getOutGoingNode());
 					}else{
 						return;
@@ -366,6 +374,9 @@ public class main {
 				}
 				
 			}
+			if(!isNotFinishInitial){
+				tmpRoutingTable.putAll(routingTable);
+			}
 			if(linkFail.size() < 1){
 				isApplySplitHorizon = false;
 				System.out.println("No link fail detected. Cannot apply a Split Horizon");
@@ -419,26 +430,41 @@ public class main {
 								if(newCost>16){
 									newCost=16;
 								}
+								if(neighborPresentNode.getNode().equals(neighborPresentNode.getOutGoingNode())){
+									neighborPresentNode.setCost(0);
+									System.out.println("set cost: "+neighborPresentNode.getCost()+" "+neighborPresentNode.getNode()+" "+neighborPresentNode.getOutGoingNode());
+								}
 								NodeDetail newNode = new NodeDetail(nodeName, neighborPresentNode.getDestinationNode(),neighborPresentNode.getNode(), newCost);
-//								System.out.print(myPresentNode.getNode()+" "+myPresentNode.getDestinationNode()+ " "+myPresentNode.getCost()+"...");
-//								System.out.println(neighborPresentNode.getNode()+" "+neighborPresentNode.getDestinationNode()+" "+newCost);
-//								System.out.println(myPresentNode.getOutGoingNode()+" "+neighborPresentNode.getOutGoingNode());
+								System.out.print(myPresentNode.getNode()+" "+myPresentNode.getDestinationNode()+ " "+myPresentNode.getCost()+" "+myPresentNode.getOutGoingNode()+"...");
+								System.out.println(neighborPresentNode.getNode()+" "+neighborPresentNode.getDestinationNode()+" "+newCost+" "+neighborPresentNode.getOutGoingNode());
+								System.out.println(isApplySplitHorizon+" "+myPresentNode.getOutGoingNode()+" "+neighborPresentNode.getNode());
 								NodeDetail nodeCheckMinCost = nodeMinOfEachDest.get(neighborPresentNode.getDestinationNode());
 								
-//								if(!isApplySplitHorizon || !neighborPresentNode.getOutGoingNode().equals(myPresentNode.getNode())){
-									if(nodeCheckMinCost!=null){
-										if(nodeCheckMinCost.getCost() > newCost && (!isApplySplitHorizon || !neighborPresentNode.getOutGoingNode().equals(myPresentNode.getNode()))){
-											nodeMinOfEachDest.remove(neighborPresentNode.getDestinationNode());
-											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
-											System.out.print(myPresentNode.getNode()+" "+myPresentNode.getDestinationNode()+ " "+myPresentNode.getCost()+"...");
-											System.out.println(neighborPresentNode.getNode()+" "+neighborPresentNode.getDestinationNode()+" "+newCost);
-										}
-									}else{
-										System.out.println(".......");
+								if(nodeCheckMinCost!=null){
+									if(nodeCheckMinCost.getCost() > newCost && (!isApplySplitHorizon || !myPresentNode.getOutGoingNode().equals(neighborPresentNode.getNode()))){
+										nodeMinOfEachDest.remove(neighborPresentNode.getDestinationNode());
 										nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
-										listnodeMinOfEachDestOut.add(newNode);
+										System.out.print(myPresentNode.getNode()+" "+myPresentNode.getDestinationNode()+ " "+myPresentNode.getCost()+"...");
+										System.out.println(neighborPresentNode.getNode()+" "+neighborPresentNode.getDestinationNode()+" "+newCost);
 									}
-//								}
+								}else if(isApplySplitHorizon){
+										if(!myPresentNode.getOutGoingNode().equals(neighborPresentNode.getNode())&& myPresentNode.getCost()>=16){
+//											System.out.println(".......");
+											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
+										}else if(!myPresentNode.getOutGoingNode().equals(neighborPresentNode.getNode())){
+//											NodeDetail oldNode = new NodeDetail(nodeName, neighborPresentNode.getDestinationNode(),neighborPresentNode.getNode(), myPresentNode.getCost());
+//											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
+										}else{
+											NodeDetail oldNode = new NodeDetail(nodeName, neighborPresentNode.getDestinationNode(),neighborPresentNode.getNode(), myPresentNode.getCost());
+											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), oldNode);
+										}
+//									
+								}else{
+									System.out.println("///////////");
+									nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
+								}
+								System.out.println("...****....");
+//								
 								
 							}else if(isNotFinishInitial){
 								//different destination >> initial routing table
@@ -497,19 +523,91 @@ public class main {
 						}
 						
 					}
-//					for (int k = 0; k < listnodeMinOfEachDestOut.size(); k++) {
-//						NodeDetail a = listnodeMinOfEachDestOut.get(k);
-////						System.out.println("#########"+a.getDestinationNode()+" "+a.getOutGoingNode());
-//						if(a!=null){
-//							System.out.println("inhash: "+a.getNode()+" "+a.getDestinationNode()+" "+a.getCost()+" "+a.getOutGoingNode());
-//							newNodeArray.add(a);
-//						}
-//						
-//					}
 					
-					if(newNodeArray!=null){
-						tmpRoutingTable.put(nodeName, newNodeArray);
-					}
+//					if(newNodeArray!=null){ //tmpOldArray NewNodeArrayList
+						
+						ArrayList<NodeDetail> tmpOldArrayList = tmpRoutingTable.get(nodeName);
+						ArrayList<String> oldDest = new ArrayList<>();
+						ArrayList<String> newDest = new ArrayList<>();
+						ArrayList<NodeDetail> probDiffNode = new ArrayList<>();
+						if(newNodeArray.size()< tmpOldArrayList.size()){
+							for (int j = 0; j < tmpOldArrayList.size(); j++) {
+								oldDest.add(tmpOldArrayList.get(j).getDestinationNode());
+								System.out.println("tmpOld: "+tmpOldArrayList.get(j).getDestinationNode()+" "+tmpOldArrayList.get(j).getOutGoingNode()+" "+tmpOldArrayList.get(j).getCost());
+							}
+							for (int j = 0; j < newNodeArray.size(); j++) {
+								newDest.add(newNodeArray.get(j).getDestinationNode());
+								System.out.println("new: "+newNodeArray.get(j).getDestinationNode()+" "+newNodeArray.get(j).getOutGoingNode()+" "+newNodeArray.get(j).getCost());
+							}
+							Hashtable<String, Integer> destDuplicate = new Hashtable<>();
+							for (int j = 0; j < oldDest.size(); j++) {
+								for (int k = j+1; k < oldDest.size(); k++) {
+									if(oldDest.get(j).equals(oldDest.get(k))){
+										destDuplicate.put(oldDest.get(j), 0);
+										System.out.println(oldDest.get(j));
+									}
+								}
+							}
+							
+							ArrayList<NodeDetail> tmp = new ArrayList<>();
+							ArrayList<NodeDetail> nonDuplicate = new ArrayList<>();
+							for (int k = 0; k < tmpOldArrayList.size(); k++) {
+								System.out.println("..."+ tmpOldArrayList.get(k).getNode());
+								if(destDuplicate.get(tmpOldArrayList.get(k).getDestinationNode())!=null){
+									tmp.add(tmpOldArrayList.get(k));
+									System.out.println("tmp: "+tmpOldArrayList.get(k).getDestinationNode()+" "+tmpOldArrayList.get(k).getOutGoingNode()+" "+tmpOldArrayList.get(k).getCost());
+								}else{
+									nonDuplicate.add(tmpOldArrayList.get(k));
+								}
+							}
+							
+							for (int j = 0; j < newNodeArray.size(); j++) {
+								for (int k = 0; k < nonDuplicate.size(); k++) {
+									if(newNodeArray.get(j).getDestinationNode().equals(nonDuplicate.get(k).getDestinationNode())){
+										if(newNodeArray.get(j).getCost() < nonDuplicate.get(k).getCost()){
+											
+											System.out.println("nonDup_notChange: "+newNodeArray.get(k).getDestinationNode()+" "+newNodeArray.get(k).getOutGoingNode()+" "+newNodeArray.get(k).getCost());
+										}else{
+											newNodeArray.remove(j);
+											newNodeArray.add(j,nonDuplicate.get(k));
+											System.out.println("nonDup: "+nonDuplicate.get(k).getDestinationNode()+" "+nonDuplicate.get(k).getOutGoingNode()+" "+nonDuplicate.get(k).getCost());
+										}
+										
+									}
+								}
+								
+							}
+							
+							for (int j = 0; j < newNodeArray.size(); j++) {
+								for (int k = 0; k < tmp.size(); k++) {
+									if(newNodeArray.get(j).getDestinationNode().equals(tmp.get(k).getDestinationNode())&&newNodeArray.get(j).getOutGoingNode().equals(tmp.get(k).getOutGoingNode())){
+										if(newNodeArray.get(j).getCost() < tmp.get(k).getCost()){
+											newNodeArray.remove(j);
+											newNodeArray.add(j,tmp.get(k));
+										}else{
+											tmp.remove(k);
+										}
+										
+									}
+								}
+								
+							}
+							
+							
+							
+							for (int j = 0; j < tmp.size(); j++) {
+								newNodeArray.add(tmp.get(j));
+							}
+							for (int k = 0; k < newNodeArray.size(); k++) {
+								System.out.println("Last: "+newNodeArray.get(k).getDestinationNode()+" "+newNodeArray.get(k).getOutGoingNode()+" "+newNodeArray.get(k).getCost());
+							}
+//							tmpRoutingTable.put(nodeName, newNodeArray);
+						}
+						System.out.println("ADDDDD: "+nodeName);
+						if(newNodeArray!=null&&newNodeArray.size()>= nodesCount){
+							tmpRoutingTable.put(nodeName, newNodeArray);
+						}
+//					}
 				}
 				
 			}
