@@ -220,7 +220,8 @@ public class main {
 						return;
 					}
 					if(checkCost!=costShortTestPath){
-						System.out.println(checkCost+" != "+costShortTestPath+ " "+path);
+//						System.out.println(checkCost+" != "+costShortTestPath+ " "+path);
+						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
 						return;
 					}
 					if (checkNotFail&&!isFinish) {
@@ -242,7 +243,7 @@ public class main {
 					}
 					
 					if (isLoop){
-						System.out.println("Routing loop occur!! >> " + shortestPath.toString());
+						System.out.println("Routing loop occur!! >> [" + path+"]");
 						System.out.println("Link between "+ndList.get(i).getNode()+", "+ndList.get(i).getOutGoingNode()+" is fail.");
 						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
 						checkNotFail = false;
@@ -284,7 +285,7 @@ public class main {
 			linkFail.put(dest+","+source, cost);
 			linkFail.put(source+","+dest, cost);
 		}else{
-			linkFail.remove(dest+","+cost);
+			linkFail.remove(dest+","+source);
 			linkFail.remove(source+","+dest);
 		}
 		if (!checkIsDirectNeighbor) {
@@ -330,14 +331,17 @@ public class main {
 	private static void updateRoutingTable(int iterations, String nodesString) {
 		for (int it = 0; it < iterations; it++) {
 			boolean checkIsMoreThanOneInterface = false;
+			boolean isNotFinishInitial = false;
 			if(!firstUpdate){
 				
 				for (int i = 0; i < nodesCount; i++) {
 					if(routingTable.get(matrixIndexInverse.get(i)).size()>nodesCount){
 						checkIsMoreThanOneInterface = checkIsMoreThanOneInterface|true;
 					}
+					
 				}
 			}
+			boolean tmpFirstUpdate=firstUpdate;
 			firstUpdate=false;
 			int tmpCountAchive=0;
 			int[][] tmpMatrixCost = new int[nodesCount][nodesCount];
@@ -349,8 +353,19 @@ public class main {
 			Hashtable<String, ArrayList<NodeDetail>> tmpRoutingTable = new Hashtable<>();
 			System.out.println("Updating routing table round: " + (it + 1));
 			boolean allUpToDate = true;
+			Hashtable<String, Integer> checkNeighborNode = new Hashtable<>();
+			for (int i = 0; i < nodesCount; i++) {
+				for (int j = 0; j < nodesCount; j++) {
+					if(routingTable.get(matrixIndexInverse.get(j)).size()>=nodesCount){
+						isNotFinishInitial |= false;
+					}else{
+						isNotFinishInitial |=true;
+					}
+				}
+				
+			}
 			
-			for (int i = 0; i < nodesCount; i++) { // all node
+			for (int i = 0, b=0; i < nodesCount; i++) { // all node
 				String nodeName = matrixIndexInverse.get(i);
 				ArrayList<String> directNeighborList = new ArrayList<>();
 				directNeighborList.addAll(neighborTable.get(nodeName));
@@ -366,15 +381,17 @@ public class main {
 					ArrayList<NodeDetail> neighborTable = new ArrayList<>();
 					neighborTable.addAll(routingTable.get(directNeighborList.get(j)));
 					allMyNeighborRoutingTable.put(neighborNodeName, neighborTable);
-					System.out.print(directNeighborList.get(j)+" ");
+//					System.out.print(directNeighborList.get(j)+" ");
 					
 				}
-				System.out.println();
-				
+//				System.out.println();
+				Hashtable<String, NodeDetail> nodeMinOfEachDest = new Hashtable<>(); //key-destination value-nodeDetail(min cost)
+				ArrayList<NodeDetail> listnodeMinOfEachDestOut = new ArrayList<>();
 				for (int j = 0; j < myRoutingTable.size(); j++) {
 					NodeDetail myPresentNode = myRoutingTable.get(j);
 					ArrayList<NodeDetail> tmpNodeArray = new ArrayList<>();
 					tmpNodeArray.addAll(myRoutingTable);
+					
 					for (int k = 0; k < directNeighborList.size(); k++) {
 						
 						ArrayList<NodeDetail> neighborRoutingTable = new ArrayList<>();
@@ -382,31 +399,75 @@ public class main {
 						for (int l = 0; l < neighborRoutingTable.size(); l++) {
 							
 							NodeDetail neighborPresentNode = neighborRoutingTable.get(l);
-							if(linkFail.get(myPresentNode.getNode()+neighborPresentNode.getNode())!=null){
+//							System.out.println(myPresentNode.getNode()+" "+neighborPresentNode.getNode() + linkFail.get(myPresentNode.getNode()+","+neighborPresentNode.getNode()));
+							if(linkFail.get(myPresentNode.getNode()+","+neighborPresentNode.getNode())!=null){
 								// check link fail
+								System.out.println("link fail: "+myPresentNode.getNode()+","+neighborPresentNode.getNode());
 								break;
 							}else if(myPresentNode.getNode().equals(neighborPresentNode.getNode())){
 								//same router
 								break;
-							}else if(myPresentNode.getDestinationNode().equals(neighborPresentNode.getDestinationNode())){
+							}else if(!isNotFinishInitial && myPresentNode.getDestinationNode().equals(neighborPresentNode.getDestinationNode())){
 								//same destination
 								
+								int newCost = neighborPresentNode.getCost()+matrixCost[matrixIndex.get(nodeName)][matrixIndex.get(neighborPresentNode.getNode())];
+								if(newCost>16){
+									newCost=16;
+								}
+								NodeDetail newNode = new NodeDetail(nodeName, neighborPresentNode.getDestinationNode(),neighborPresentNode.getNode(), newCost);
+//								System.out.print(myPresentNode.getNode()+" "+myPresentNode.getDestinationNode()+ " "+myPresentNode.getCost()+"...");
+//								System.out.println(neighborPresentNode.getNode()+" "+neighborPresentNode.getDestinationNode()+" "+newCost);
+//								System.out.println(myPresentNode.getOutGoingNode()+" "+neighborPresentNode.getOutGoingNode());
+								NodeDetail nodeCheckMinCost = nodeMinOfEachDest.get(neighborPresentNode.getDestinationNode());
 								
+								if(!isApplySplitHorizon || !neighborPresentNode.getOutGoingNode().equals(myPresentNode.getNode())){
+									if(nodeCheckMinCost!=null){
+										if(nodeCheckMinCost.getCost() > newCost){
+											nodeMinOfEachDest.remove(neighborPresentNode.getDestinationNode());
+											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
+											if(newNode.getOutGoingNode().equals(nodeCheckMinCost)){
+												if(listnodeMinOfEachDestOut!=null && listnodeMinOfEachDestOut.size()>0){
+													for (int m = 0; m < listnodeMinOfEachDestOut.size(); m++) {
+														if(listnodeMinOfEachDestOut.get(m)==null){
+															listnodeMinOfEachDestOut.add(newNode);
+														}else if(listnodeMinOfEachDestOut.get(m).getCost() > newCost && listnodeMinOfEachDestOut.get(m).getDestinationNode().equals(neighborPresentNode.getDestinationNode())&&listnodeMinOfEachDestOut.get(m).getOutGoingNode().equals(neighborPresentNode.getNode())){
+															listnodeMinOfEachDestOut.remove(m);
+															listnodeMinOfEachDestOut.add(m,nodeCheckMinCost);
+															System.out.println("removeAdd: "+nodeName+"----- "+nodeCheckMinCost.getDestinationNode()+" "+nodeCheckMinCost.getOutGoingNode()+" "+nodeCheckMinCost.getCost());
+														}
+														
+													}
+												
+												}
+												
+											}
+										}
+									}else{
+										System.out.println(".......");
+										nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
+										listnodeMinOfEachDestOut.add(newNode);
+									}
+								}
 								
-							}else{
+							}else if(isNotFinishInitial){
 								//different destination >> initial routing table
 								boolean isExist = false;
 //								System.out.println()
 								if(allMyNeighborRoutingTable.get(neighborPresentNode.getDestinationNode())==null && !neighborPresentNode.getDestinationNode().equals(nodeName)){
 									//add node that not exist in my table
+									System.out.println("INITIAL");
 //									System.out.println(neighborPresentNode.getNode()+" "+neighborPresentNode.getDestinationNode());
-									int cost = neighborPresentNode.getCost()+matrixCost[matrixIndex.get(nodeName)][matrixIndex.get(neighborPresentNode.getNode())];
-									NodeDetail newNode = new NodeDetail(nodeName, neighborPresentNode.getDestinationNode(),neighborPresentNode.getNode(), cost);	
+									int newCost = neighborPresentNode.getCost()+matrixCost[matrixIndex.get(nodeName)][matrixIndex.get(neighborPresentNode.getNode())];
+									if(newCost>16){
+										newCost=16;
+									}
+									NodeDetail newNode = new NodeDetail(nodeName, neighborPresentNode.getDestinationNode(),neighborPresentNode.getNode(), newCost);	
 									for (int m = 0; m < tmpNodeArray.size(); m++) {
 										if(tmpNodeArray.get(m).getDestinationNode().equals(newNode.getDestinationNode())&&tmpNodeArray.get(m).getOutGoingNode().equals(newNode.getOutGoingNode())){
 											//new node has the same destination and out going
-											if(tmpNodeArray.get(m).getCost() < cost){
+											if(tmpNodeArray.get(m).getCost() < newCost){
 												tmpNodeArray.remove(m);
+												System.out.println("INITIAL: remove");
 												isExist = false;
 											}else{
 												isExist = true;
@@ -417,7 +478,7 @@ public class main {
 									if(!isExist){
 										tmpNodeArray.add(newNode);
 										tmpRoutingTable.put(nodeName, tmpNodeArray);
-										tmpMatrixCost[matrixIndex.get(nodeName)][matrixIndex.get(newNode.getDestinationNode())] = cost;
+										tmpMatrixCost[matrixIndex.get(nodeName)][matrixIndex.get(newNode.getDestinationNode())] = newCost;
 										allUpToDate = false;
 									}
 								}
@@ -425,6 +486,41 @@ public class main {
 						}
 					}
 				}
+				if(!isNotFinishInitial){
+					ArrayList<NodeDetail> newNodeArray = new ArrayList<>();
+					for (int k = 0; k < nodeMinOfEachDest.size(); k++) {
+						NodeDetail a = nodeMinOfEachDest.get(matrixIndexInverse.get(k));
+						
+						if(a!=null){
+							if(a.getNode().equals(matrixIndexInverse.get(k))){
+								newNodeArray.add(new NodeDetail(matrixIndexInverse.get(k), matrixIndexInverse.get(k), matrixIndexInverse.get(k), 0));
+								tmpMatrixCost[matrixIndex.get(nodeName)][matrixIndex.get(matrixIndexInverse.get(k))] = 0;
+							}else{
+								newNodeArray.add(a);
+								if(tmpMatrixCost[matrixIndex.get(nodeName)][matrixIndex.get(matrixIndexInverse.get(k))]!=a.getCost()){
+									allUpToDate=false;
+								}
+								tmpMatrixCost[matrixIndex.get(nodeName)][matrixIndex.get(matrixIndexInverse.get(k))] = a.getCost();
+							}
+//							System.out.println("inhash: "+a.getNode()+" "+a.getDestinationNode()+" "+a.getCost()+" "+a.getOutGoingNode());
+						}
+						
+					}
+					for (int k = 0; k < listnodeMinOfEachDestOut.size(); k++) {
+						NodeDetail a = listnodeMinOfEachDestOut.get(k);
+//						System.out.println("#########"+a.getDestinationNode()+" "+a.getOutGoingNode());
+						if(a!=null){
+							System.out.println("inhash: "+a.getNode()+" "+a.getDestinationNode()+" "+a.getCost()+" "+a.getOutGoingNode());
+//							newNodeArray.add(a);
+						}
+						
+					}
+					
+					if(newNodeArray!=null && newNodeArray.size()>=nodesCount ){
+						tmpRoutingTable.put(nodeName, newNodeArray);
+					}
+				}
+				
 			}
 			routingTable.putAll(tmpRoutingTable);
 			for (int i = 0; i < matrixCost.length; i++) {
@@ -439,13 +535,6 @@ public class main {
 				System.out.println("Stability already achieved at round " + it);
 				countAchive=0;
 				return;
-			}else if(tmpCountAchive==countAchive&&countAchive!=0){
-				System.out.println(">> Stability already achieved at round " + (it));
-				countAchive=0;
-				return;
-			}else{
-				countAchive=tmpCountAchive;
-				System.out.println(countAchive+" "+tmpCountAchive);
 			}
 		}
 
