@@ -54,7 +54,7 @@ public class main {
 			}
 			switch (option) {
 			case 1:
-				System.out.println("Type number of iterations for updating and \nset of nodes to trace\n(e.g. 3 N1,N3,N4): ");
+				System.out.println("Type number of iterations for updating and \nset of nodes to trace\nor type number and 'all' to trace all\n(e.g. 3 N1,N3,N4): ");
 				input = new Scanner(System.in);
 				String line = input.nextLine();
 				if (line.split(" ").length < 2) {
@@ -125,7 +125,7 @@ public class main {
 				System.out.println();
 				resetRoutingTable(false);
 				printRoutingTable("all");
-				System.out.println("Already updated!");
+				System.out.println("Already reset!");
 				System.out.println();
 				break;
 			case 8:
@@ -215,7 +215,8 @@ public class main {
 		for (int i = 0; i < ndList.size(); i++) {
 			
 			if (ndList.get(i).getDestinationNode().equals(dest)) {
-				shortestPath.add(ndList.get(i).getOutGoingNode());
+//				shortestPath.add(ndList.get(i).getOutGoingNode());
+				boolean isLoop=false;
 				if (ndList.get(i).getOutGoingNode().equals(dest)) {
 					if(firstFindBestRoute){
 						checkCost = ndList.get(i).getCost();
@@ -224,8 +225,14 @@ public class main {
 					}else{
 						path += ","+ndList.get(i).getOutGoingNode();
 					}
-					String tmpPath[] = path.split(",");
+					if(ndList.get(i).getCost() >= 16){
+						System.out.println("Link from "+ndList.get(i).getNode()+" to "+ndList.get(i).getOutGoingNode()+" is fail.\nThis route " + startRoute + " to " + dest + " is unreachable.");
+						checkNotFail = false;
+						return;
+					}
 					
+					String tmpPath[] = path.split(",");
+					costShortTestPath = matrixCost[matrixIndex.get(tmpPath[0])][matrixIndex.get(tmpPath[tmpPath.length-1])];
 					if (checkNotFail&&!isFinish) {
 						System.out.println("The shortest path is ["+path + "]. cost: " + costShortTestPath);
 						isFinish = true;
@@ -237,24 +244,21 @@ public class main {
 						return;
 					}
 					if(checkCost!=costShortTestPath&&!isFinish){
-						System.out.println(checkCost+" != "+costShortTestPath+ " "+path);
+//						System.out.println(checkCost+" != "+costShortTestPath+ " "+path);
 						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
 						return;
 					}
-						if(ndList.get(i).getCost() > 16){
-						System.out.println("Link from "+ndList.get(i).getNode()+" to "+ndList.get(i).getOutGoingNode()+" is fail.\nThis route " + startRoute + " to " + dest + " is unreachable.");
-						checkNotFail = false;
-						return;
-					}
+						
 
 				} else if (ndList.get(i).getCost() < 16) {
 					firstFindBestRoute = false;
-					boolean isLoop=false;
+					
 					String [] checkLoop = path.split(",");
 					Hashtable<String, Integer> checkNode = new Hashtable<>();
 					for (int j = 0; j < checkLoop.length; j++){
 						if(checkNode.put(checkLoop[j],0)!=null){
 							isLoop = true;
+							break;
 						}
 					}
 					
@@ -264,9 +268,11 @@ public class main {
 						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
 						checkNotFail = false;
 						return;
+					}else if(isLoop){
+						return;
 					}
 					if(checkNotFail){
-						System.out.println(ndList.get(i).getCost()+" "+checkCost);
+//						System.out.println(ndList.get(i).getCost()+" "+checkCost);
 						findBestRoute(ndList.get(i).getOutGoingNode(), dest, ndList.get(i).getCost()+checkCost, path+","+ndList.get(i).getOutGoingNode());
 					}else{
 						return;
@@ -436,12 +442,16 @@ public class main {
 									if(nodeCheckMinCost.getCost() > newCost && (!isApplySplitHorizon || !myPresentNode.getOutGoingNode().equals(neighborPresentNode.getNode()))){
 										nodeMinOfEachDest.remove(neighborPresentNode.getDestinationNode());
 										nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
+									}else if(isApplySplitHorizon&&nodeCheckMinCost.getCost() < newCost){
+										nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
 									}
 								}else if(isApplySplitHorizon){
 										if(!myPresentNode.getOutGoingNode().equals(neighborPresentNode.getNode())&& myPresentNode.getCost()>=16){
 											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), newNode);
 										}else if(!myPresentNode.getOutGoingNode().equals(neighborPresentNode.getNode())){
 											//it should count the time for time out and change to fail link
+											NodeDetail oldNode = new NodeDetail(nodeName, neighborPresentNode.getDestinationNode(),neighborPresentNode.getNode(), myPresentNode.getCost());
+											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), oldNode);
 										}else{
 											NodeDetail oldNode = new NodeDetail(nodeName, neighborPresentNode.getDestinationNode(),neighborPresentNode.getNode(), myPresentNode.getCost());
 											nodeMinOfEachDest.put(neighborPresentNode.getDestinationNode(), oldNode);
@@ -570,6 +580,7 @@ public class main {
 					matrixCost[i][j] = tmpMatrixCost[i][j];
 				}
 			}
+			printMatrixCost();
 			printRoutingTable(nodesString);
 			if(linkFail.size() < 1){
 				isApplySplitHorizon = false;
