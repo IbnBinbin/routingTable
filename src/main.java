@@ -264,7 +264,7 @@ public class main {
 					
 					if (isLoop && !isFinish){
 						System.out.println("Routing loop occur!! >> [" + path+"]");
-						System.out.println("Link between "+ndList.get(i).getNode()+", "+ndList.get(i).getOutGoingNode()+" is fail.");
+						System.out.println("Link between "+ndList.get(i).getOutGoingNode()+", "+dest+" is fail.");
 						System.out.println("This route: " + startRoute + " to " + dest + " is unreachable");
 						checkNotFail = false;
 						return;
@@ -580,7 +580,7 @@ public class main {
 					matrixCost[i][j] = tmpMatrixCost[i][j];
 				}
 			}
-			printMatrixCost();
+//			printMatrixCost();
 			printRoutingTable(nodesString);
 			if(linkFail.size() < 1){
 				isApplySplitHorizon = false;
